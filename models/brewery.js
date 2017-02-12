@@ -4,6 +4,7 @@ const Sequelize = require('sequelize')
 const sequelize = new Sequelize({
   dialect: 'sqlite',
   storage: './data/database.sqlite', // TODO: fix problem with dotenv and require
+  logging: false,
   define: {
     timestamps: false
   }

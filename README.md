@@ -11,7 +11,27 @@ In deze opdracht maak je een tool die ons hiermee helpt: we willen een postcode 
 
 ## Solution
 
-...
+Note: create a `.env` file and store your Google Maps API key here
+
+## How to run
+
+Install all dependencies
+```bash
+yarn
+```
+
+Import breweries from JSON file to the database
+
+```bash
+node script.js "1053ZJ"
+```
+
+Run script
+
+```bash
+node script.js "1053ZJ"
+```
 
 ### APIs to enable
 - Google Maps Geocoding API
+- Google Maps Directions API
