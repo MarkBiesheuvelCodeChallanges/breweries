@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@google/maps": "^0.3.1",
+    "dotenv": "^4.0.0",
+    "geolib": "^2.0.22",
+    "sequelize": "^3.30.2",
+    "sqlite3": "^3.1.8"
+  }
+}
