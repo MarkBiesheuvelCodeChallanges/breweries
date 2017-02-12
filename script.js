@@ -14,7 +14,7 @@ const maps = Maps.createClient({
 // Get input from command line
 const input = process.argv[2]
 
-const promises = [
+Promise.all([
   Brewery.sync().then(
     () => Brewery.findAll().then(
       breweries => breweries.map(brewery => brewery.toJSON())
@@ -32,12 +32,10 @@ const promises = [
     }
   }).catch(error => {
     // Error while geocoding input
-    console.log('Invalid address')
+    process.stdout.write('Invalid address')
     throw error
   })
-]
-
-Promise.all(promises).then(values => {
+]).then(values => {
   const [breweries, location] = values
 
   // Get a quick approximation of the distance to this brewery
@@ -50,35 +48,33 @@ Promise.all(promises).then(values => {
 
   // Pick three with shortest (approximated) distance
   return breweries.slice(0, 3)
-}).then(breweries => {
+}).then(breweries =>
+  Promise.all(
+    breweries.map((brewery) =>
+      maps.directions({
+        origin: input,
+        destination: `${brewery.address}, ${brewery.city}`,
+        mode: 'driving'
+      }).asPromise().then(response => {
+        const leg = response.json.routes[0].legs[0]
 
-  const promises = breweries.map((brewery) => {
-    return maps.directions({
-      origin: input,
-      destination: `${brewery.address}, ${brewery.city}`,
-      mode: 'driving'
-    }).asPromise().then(response => {
-      const leg = response.json.routes[0].legs[0]
+        brewery.distance = leg.distance
+        brewery.duration = leg.duration
+        brewery.steps = leg.steps
 
-      brewery.distance = leg.distance
-      brewery.duration = leg.duration
-      brewery.steps = leg.steps
-
-      return brewery
-    })
-  })
-
-  return Promise.all(promises)
-
-}).then(breweries => {
-
-  // Sort based on travel time
+        return brewery
+      }).catch(() => {
+        // Couldn't find a route
+        brewery.duration = { value: Number.POSITIVE_INFINITY }
+        return brewery
+      })
+    )
+  )
+).then(breweries =>
   breweries.sort((a, b) => (a.duration.value - b.duration.value))
-
-  // Closest brewery
-  const brewery = breweries[0]
-
-  console.log(`${brewery.name}, ${brewery.address}, ${brewery.city}`)
+    .shift()
+).then(brewery => {
+  process.stdout.write(`${brewery.name}, ${brewery.address}, ${brewery.city}\n`)
 }).catch(() => {
   // Something broke in the chain
 })
