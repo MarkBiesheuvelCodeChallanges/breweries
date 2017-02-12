@@ -18,16 +18,22 @@ const promises = [
   Brewery.sync().then(
     () => Brewery.findAll().then(
       breweries => breweries.map(brewery => brewery.toJSON())
-    )
-  ),
+    ).catch(() => [])
+  ).catch(() => {
+    // Error while syncing model to database
+  }),
   maps.geocode({ address: input }).asPromise().then((response) => {
     const { results, status } = response.json
 
     if (status === 'OK' && results.length > 0) {
       return results[0].geometry.location
     } else {
-      throw Error('No result found')
+      throw Error('Address couldn\'t be geocoded')
     }
+  }).catch(error => {
+    // Error while geocoding input
+    console.log('Invalid address')
+    throw error
   })
 ]
 
@@ -73,4 +79,6 @@ Promise.all(promises).then(values => {
   const brewery = breweries[0]
 
   console.log(`${brewery.name}, ${brewery.address}, ${brewery.city}`)
+}).catch(() => {
+  // Something broke in the chain
 })

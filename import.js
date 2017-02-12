@@ -31,5 +31,10 @@ Brewery.sync({ force: true }).then(() => {
           )
         }
       })
+      .catch((error) => {
+        // Error while geocoding address
+      })
   })
+}).catch((error) => {
+  // Error while syncing model to database
 })
